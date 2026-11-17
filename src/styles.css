@@ -35,26 +35,8 @@ p, h1, h2, h3, ul { margin: 0; }
 .table-context { padding: 7px 12px; border: 1px solid #ded5c3; border-radius: 5px; color: #514a39; font-size: 12px; font-weight: 730; white-space: nowrap; }
 #top { scroll-margin-top: 80px; }
 
-.hero {
-  display: flex;
-  align-items: center;
-  min-height: 252px;
-  margin-top: 22px;
-  overflow: hidden;
-  border-radius: 15px;
-  color: #fffbef;
-  background:
-    linear-gradient(90deg, #16281f 8%, #16281f 29%, #16281fb5 53%, #16281f0d 79%),
-    url('/images/hero.webp') right 48% / 74% auto no-repeat,
-    #16281f;
-}
-.hero-copy { max-width: 640px; padding: 36px clamp(28px, 6vw, 75px); }
 .eyebrow { display: flex; align-items: center; gap: 9px; color: #675332; font-size: 10px; font-weight: 790; letter-spacing: .19em; }
 .eyebrow span { flex: none; width: 18px; height: 1px; background: currentColor; }
-.hero .eyebrow { color: var(--gold); }
-.hero h1 { margin: 12px 0; font: 400 clamp(52px, 7.2vw, 102px)/.94 var(--serif); letter-spacing: -.068em; }
-.intro { max-width: 330px; color: #f5ecda; font-size: 15px; line-height: 1.55; }
-
 #menu { margin: 24px 0 54px; }
 .menu-controls { border-bottom: 1px solid #ded8ca; }
 .search-row { display: flex; gap: 9px; }
@@ -111,14 +93,10 @@ p, h1, h2, h3, ul { margin: 0; }
 .diet-dot.non-veg { color: #a74834; }
 .dish-description { margin-top: 5px; color: var(--muted); font-size: 13px; line-height: 20px; }
 .dish-price { color: var(--ink); font-size: 17px; font-weight: 760; line-height: 24px; letter-spacing: -.02em; }
-.dish-price small { margin-left: 8px; color: var(--muted); font-size: 11px; }
 .dish-bottom { grid-area: bottom; display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 13px 8px 15px; border-top: 1px solid #eee8dc; }
+.dish-bottom > .details-button { margin-inline-start: auto; }
 .details-button { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; padding: 0; border: 0; color: #2f4a35; background: transparent; font-size: 13px; font-weight: 730; white-space: nowrap; }
 .details-button:hover { text-decoration: underline; text-underline-offset: 3px; }
-.add-button, .plate-primary { display: inline-flex; justify-content: center; align-items: center; gap: 5px; min-height: 44px; padding: 7px 15px; border: 1px solid var(--green); border-radius: 7px; color: #fffaf0; background: var(--green); font-size: 13px; font-weight: 750; white-space: nowrap; }
-.add-button { min-width: 85px; }
-.add-button:disabled { opacity: 1; border-color: #e3ddcf; color: #58564b; background: #f0ece2; }
-.add-button:not(:disabled):hover, .plate-primary:hover { background: #34513c; }
 
 .notice { padding: 24px 14px; text-align: center; border: 1px dashed #d6c8ae; border-radius: 9px; color: var(--muted); margin-top: 18px; }
 .notice button { margin-top: 8px; padding: 8px 12px; min-height: 44px; border: 1px solid #d6c8ae; border-radius: 7px; background: var(--paper); color: var(--ink); font-size: 13px; font-weight: 700; }
@@ -139,11 +117,6 @@ footer { padding: 22px 0; border-top: 1px solid var(--line); color: var(--muted)
   .brand small { font-size: 8px; }
   .table-context { padding: 6px 8px; font-size: 11px; }
   #top { scroll-margin-top: 68px; }
-  .hero { min-height: 175px; margin-top: 12px; border-radius: 11px;
-    background: linear-gradient(90deg, #15271ff5, #15271fc4 43%, #15271f47 100%), url('/images/hero.webp') 66% 46% / cover, #16281f; }
-  .hero-copy { padding: 22px 16px; }
-  .hero h1 { margin: 9px 0; font-size: clamp(45px, 11vw, 67px); }
-  .intro { font-size: 13px; max-width: 230px; }
   #menu { margin-top: 16px; }
   .search-row select { max-width: 107px; padding-inline: 5px; }
   .categories { gap: 18px; }

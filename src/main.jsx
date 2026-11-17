@@ -1,36 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { categories, previewMenu, fetchMenu, liveMenuEnabled, keralaDate, isSpecial, isAvailable, formatPrice } from './menu.js';
+import { keralaDate, isSpecial, isAvailable, formatPrice, dishMedia } from './menu.js';
 import { Icon } from './Icon.jsx';
-import { DishCard, DishDialog, PlateDialog } from './Dining.jsx';
+import { DishCard, DishDialog } from './Dining.jsx';
 import './styles.css';
+import { liveMenuEnabled, loadGuestMenu, photoUrl } from './backend.js';
+import { Plate, PlateButton, usePlate } from './Plate.jsx';
 import './dining.css';
+import './discovery.css';
 
-const allCategories = [['all', 'All dishes', 'all'], ...categories];
 const table = new URLSearchParams(window.location.search).get('table')?.trim();
 const tableLabel = table && /^[a-z0-9-]{1,12}$/i.test(table) ? table.toUpperCase() : null;
-const plateKey = `spice-garden:plate:v1:${tableLabel ?? 'menu'}`;
-
-function readPlate() {
-  try {
-    const entries = JSON.parse(localStorage.getItem(plateKey) ?? '[]');
-    return new Map(entries.filter(([id, quantity]) => typeof id === 'string' &&
-      Number.isInteger(quantity) && quantity > 0 && quantity <= 99));
-  } catch {
-    return new Map();
-  }
-}
-
 function App() {
   const [category, setCategory] = useState('all');
   const [diet, setDiet] = useState('all');
   const [query, setQuery] = useState('');
-  const [items, setItems] = useState(liveMenuEnabled ? [] : previewMenu);
-  const [status, setStatus] = useState(liveMenuEnabled ? 'loading' : 'ready');
+  const [menu, setMenu] = useState(null);
+  const plate = usePlate(tableLabel);
+  const [status, setStatus] = useState(liveMenuEnabled ? 'loading' : 'unconfigured');
   const [attempt, setAttempt] = useState(0);
-  const [plate, setPlate] = useState(readPlate);
-  const [dialog, setDialog] = useState(null);
-  const [announcement, setAnnouncement] = useState({ text: '', key: 0 });
+  const [selectedId, setSelectedId] = useState(null);
   const [date, setDate] = useState(() => keralaDate.format(new Date()));
 
   useEffect(() => {
@@ -40,64 +29,52 @@ function App() {
 
   useEffect(() => {
     if (!liveMenuEnabled) return;
-    const controller = new AbortController();
-    const timeout = window.setTimeout(() => controller.abort(), 8000);
     let active = true;
-    fetchMenu(controller.signal).then((menu) => {
+    loadGuestMenu().then((result) => {
       if (!active) return;
-      setItems(menu);
+      setMenu(result);
       setStatus('ready');
-    }).catch(() => {
-      if (active) setStatus('error');
-    }).finally(() => window.clearTimeout(timeout));
-    return () => {
-      active = false;
-      window.clearTimeout(timeout);
-      controller.abort();
-    };
+    }).catch(() => { if (active) setStatus('error'); });
+    return () => { active = false; };
   }, [attempt]);
 
-  useEffect(() => {
-    try {
-      localStorage.setItem(plateKey, JSON.stringify([...plate]));
-    } catch {
-      // The plate remains usable for this visit when storage is unavailable.
-    }
-  }, [plate]);
-
-  function changeQuantity(item, delta) {
-    if (delta > 0 && !isAvailable(item)) return;
-    setPlate((previous) => {
-      const updated = new Map(previous);
-      const quantity = Math.min(99, (updated.get(item.id) ?? 0) + delta);
-      if (quantity > 0) updated.set(item.id, quantity);
-      else updated.delete(item.id);
-      return updated;
-    });
-    setAnnouncement(({ key }) => ({
-      text: `${delta > 0 ? 'Added' : 'Removed'} one ${item.name} ${delta > 0 ? 'to' : 'from'} My Plate.`,
-      key: key + 1,
-    }));
-  }
-
-  const catalog = new Map(items.map((item) => [item.id, item]));
-  const rows = [...plate].map(([id, quantity]) => ({ id, quantity, item: catalog.get(id) }));
-  const plateCount = rows.reduce((sum, row) => sum + row.quantity, 0);
-  const subtotal = rows.length && rows.every(({ item }) => isAvailable(item) && item.price_paise != null)
-    ? rows.reduce((sum, { item, quantity }) => sum + item.price_paise * quantity, 0)
-    : null;
-  const selectedDish = dialog?.type === 'dish' ? catalog.get(dialog.id) : null;
-  const closeDialog = () => setDialog(null);
+  const items = menu ? menu.items.map((item) => {
+    const images = menu.images.filter((image) => image.item_id === item.id);
+    return {
+      ...item,
+      category_name: menu.categories.find((entry) => entry.id === item.category)?.name,
+      thumbnail_url: images[0] && photoUrl(images[0].thumbnail_path),
+      image_urls: [...images.map((image) => photoUrl(image.image_path)), ...(item.image_urls ?? [])],
+      gallery_alts: Object.fromEntries(images.map((image) => [photoUrl(image.image_path), image.alt_text])),
+      pairing: item.paired_item_id ? { id: item.paired_item_id } : null,
+    };
+  }) : [];
+  const chefCollection = menu?.collections.find((entry) => entry.id === 'chef-picks');
+  const picks = chefCollection ? menu.memberships.filter((row) => row.collection_id === chefCollection.id)
+    .map((row) => items.find((item) => item.id === row.item_id)).filter(isAvailable) : [];
+  const featured = items.find((item) => item.id === menu?.homepage?.featured_item_id && isAvailable(item));
+  const featuredPhoto = featured && dishMedia(featured).images[0];
+  const bannerPath = menu?.homepage?.default_banner_path;
+  const heroPhoto = featuredPhoto || (bannerPath ? photoUrl(bannerPath) : null);
+  const regularCategories = (menu?.categories ?? []).map(({ id, name }) => [id, name]);
+  const allCategories = [['all', 'All dishes'], ...regularCategories,
+    ...(menu?.collections ?? []).map(({id, name}) => [`collection:${id}`, name])];
+  const collectionOrder = new Map(menu?.memberships.filter((row) => `collection:${row.collection_id}` === category)
+    .map((row, index) => [row.item_id, index]));
+  const selectedDish = items.find((item) => item.id === selectedId);
+  const pairing = items.find((item) => item.id === selectedDish?.pairing?.id);
+  const openDish = (item) => setSelectedId(item.id);
 
   const words = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
   const hasFilters = category !== 'all' || diet !== 'all' || words.length > 0;
   const sectionName = allCategories.find(([id]) => id === category)?.[1];
   const results = items.filter((item) => {
-    const categoryMatches = category === 'all' || (category === 'special' ? isSpecial(item, date) : item.category === category);
+    const categoryMatches = category === 'all' || (category.startsWith('collection:') ? (collectionOrder.has(item.id) || (category === 'collection:today' && isSpecial(item, date))) : category === 'special' ? isSpecial(item, date) : item.category === category);
     const dietMatches = diet === 'all' || item.diet === diet;
-    const searchable = `${item.name} ${item.description} ${categories.find(([id]) => id === item.category)?.[1] ?? ''}`.toLowerCase();
+    const searchable = `${item.name} ${item.short_description ?? ''} ${item.description} ${regularCategories.find(([id]) => id === item.category)?.[1] ?? ''}`.toLowerCase();
     return categoryMatches && dietMatches && words.every((word) => searchable.includes(word));
-  }).sort((first, second) => Number(isAvailable(second)) - Number(isAvailable(first)));
+  }).sort((first, second) => Number(isAvailable(second)) - Number(isAvailable(first)) ||
+    (collectionOrder.get(first.id) ?? 0) - (collectionOrder.get(second.id) ?? 0));
 
   function resetFilters() {
     setCategory('all');
@@ -109,19 +86,45 @@ function App() {
     <>
       <header className="topbar">
         <div className="frame bar-inner">
-          <a className="brand" href="#top"><img src="/spice.svg" width="42" height="42" alt="" /><span><strong>Spice Garden</strong><small>BY AADISAKTTHI</small></span></a>
+          <a className="brand" href="#top"><span><strong>Spice Garden</strong><small>BY AADISAKTTHI</small></span></a>
           {tableLabel && <span className="table-context">Table {tableLabel}</span>}
         </div>
       </header>
 
       <main className="frame" id="top">
-        <section className="hero" aria-labelledby="hero-title">
+        <section className="discovery-hero" aria-labelledby="hero-title">
+          {heroPhoto && <img className="discovery-hero-photo" src={heroPhoto} alt="" fetchPriority="high" />}
           <div className="hero-copy">
-            <p className="eyebrow"><span /> KOVALAM, KERALA</p>
-            <h1 id="hero-title">Spice Garden</h1>
-            <p className="intro">Coastal Kerala cooking at Aadisaktthi Resorts &amp; Spa.</p>
+            <p className="eyebrow"><span /> SPICE GARDEN · KOVALAM</p>
+            <h1 id="hero-title">{(featured && menu?.homepage?.headline_override) || featured?.name || 'Spice Garden'}</h1>
+            <p className="intro">{(featured && menu?.homepage?.subtitle_override) || featured?.tasting_note || featured?.short_description || featured?.description || 'Coastal Kerala cooking at Aadisaktthi Resorts & Spa.'}</p>
+            {featured && <p className="hero-price">{formatPrice(featured.price_paise)}</p>}
+            <div className="discovery-hero-actions">
+              {featured && <button className="discovery-action" type="button" onClick={() => openDish(featured)}>
+                Explore dish <Icon name="right" size={16} />
+              </button>}
+              <a className="menu-jump" href="#menu">Browse full menu <Icon name="down" size={15} /></a>
+            </div>
           </div>
         </section>
+
+        {picks.length > 0 && <section className="discovery-picks" aria-labelledby="chef-picks-title">
+          <p className="eyebrow"><span /> FROM THE KITCHEN</p>
+          <h2 id="chef-picks-title">{chefCollection?.name ?? 'Chef’s Picks'}</h2>
+          <div className="picks-grid">
+            {picks.map((item) => {
+              const photo = item.thumbnail_url ?? dishMedia(item).images[0];
+              return <article key={item.id} className="pick-card">
+                <button className="pick-open" type="button" onClick={() => openDish(item)} aria-label={`Explore ${item.name}`}>
+                  {photo && <img src={photo} alt="" width="720" height="480" loading="lazy" />}
+                  <span className="pick-content"><span><strong>{item.name}</strong>
+                    <span className="pick-note">{item.tasting_note || item.short_description || item.description}</span></span><Icon name="right" size={19} /></span>
+                </button>
+
+              </article>;
+            })}
+          </div>
+        </section>}
 
         <section id="menu" aria-label="Restaurant menu">
           <div className="menu-controls">
@@ -142,6 +145,7 @@ function App() {
             </nav>
           </div>
 
+          {status === 'unconfigured' && <div className="notice" role="status">The online menu is being set up. Please ask your server for the current menu.</div>}
           {status === 'loading' && <div className="notice" role="status">Loading the menu…</div>}
           {status === 'error' && <div className="notice" role="alert">
             <p>The live menu is temporarily unavailable. Please ask your server for the current menu.</p>
@@ -151,8 +155,8 @@ function App() {
             <div className="results-title"><h2>{words.length ? 'Search results' : category === 'all' ? 'The Menu' : sectionName}</h2>
               <span role="status">{results.length} {results.length === 1 ? 'dish' : 'dishes'}</span></div>
             {results.length > 0 ? <div className="dishes">
-              {results.map((item, index) => <DishCard key={item.id} item={item} index={index} quantity={plate.get(item.id) ?? 0}
-                onOpen={() => setDialog({ type: 'dish', id: item.id })} onChangeQuantity={(delta) => changeQuantity(item, delta)} />)}
+              {results.map((item, index) => <DishCard key={item.id} item={item} index={index}
+                onOpen={() => openDish(item)} plateAction={<PlateButton item={item} plate={plate} />} />)}
             </div> : <div className="notice">
               <p>{category === 'special' && !words.length && diet === 'all' ? 'Ask your server about today’s specials.' :
                 hasFilters ? 'No dishes match your filters.' : 'Please ask your server for the current menu.'}</p>
@@ -164,26 +168,20 @@ function App() {
 
       <footer><div className="frame footer-inner">
         <div><strong>Spice Garden Restaurant</strong><p>Aadisaktthi Resorts &amp; Spa · Vellar, Kovalam</p></div>
-        <p>{liveMenuEnabled ? 'Please ask your server about allergens and availability.' : 'Presentation menu · Sample prices and illustrative photography'}</p>
+        <p>Please ask your server about allergens and availability.</p>
       </div></footer>
 
-      {plateCount > 0 && <div className="plate-bar">
-        <button className="plate-trigger" type="button" onClick={() => setDialog({ type: 'plate' })}>
-          <span className="plate-trigger-copy">
-            <strong>{plateCount} {plateCount === 1 ? 'item' : 'items'}{subtotal != null && ` · ${formatPrice(subtotal)}`}</strong>
-            <small>Show your server when ready</small>
-          </span>
-          <span className="plate-trigger-action">View My Plate <Icon name="right" size={18} /></span>
-        </button>
-      </div>}
-      <div className="sr-only" role="status" aria-atomic="true"><span key={announcement.key}>{announcement.text}</span></div>
+      <Plate plate={plate} items={items} tableLabel={tableLabel} />
       {selectedDish && <DishDialog key={selectedDish.id} item={selectedDish} date={date}
-        preview={!liveMenuEnabled} quantity={plate.get(selectedDish.id) ?? 0}
-        onChangeQuantity={(delta) => changeQuantity(selectedDish, delta)} onDismiss={closeDialog} />}
-      {dialog?.type === 'plate' && <PlateDialog rows={rows} count={plateCount} subtotal={subtotal} menuReady={status === 'ready'}
-        tableLabel={tableLabel} onChangeQuantity={changeQuantity} onDismiss={closeDialog} />}
+        plateAction={<PlateButton item={selectedDish} plate={plate} />} pairing={pairing} onOpenPairing={() => openDish(pairing)}
+        onDismiss={() => setSelectedId(null)} />}
     </>
   );
 }
 
-createRoot(document.getElementById('root')).render(<App />);
+const root = createRoot(document.getElementById('root'));
+if (window.location.pathname.replace(/\/$/, '') === '/admin') {
+  import('./Admin.jsx').then(({ default: Admin }) => root.render(<Admin />));
+} else {
+  root.render(<App />);
+}

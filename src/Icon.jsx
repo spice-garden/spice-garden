@@ -13,7 +13,6 @@ const icons = {
   arrow: 'M4 12h15m-6-6 6 6-6 6',
   down: 'M12 4v15m-6-6 6 6 6-6',
   camera: 'M3 7h4l2-3h6l2 3h4v13H3zM16 13a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z',
-  video: 'M8 4l12 8-12 8z',
   left: 'M15 5l-7 7 7 7',
   right: 'M9 5l7 7-7 7',
   plus: 'M12 5v14M5 12h14',

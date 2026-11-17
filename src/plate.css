@@ -1,0 +1,22 @@
+.plate-add, .plate-stepper button, .plate-trigger {
+  border: 1px solid var(--green);
+  border-radius: 7px;
+  background: var(--green);
+  color: white;
+  padding: 8px 12px;
+  font-weight: 700;
+  min-height: 40px;
+}
+.plate-stepper { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.plate-stepper button { min-width: 34px; padding-inline: 7px; }
+.plate-stepper output { min-width: 1.8ch; text-align: center; }
+.plate-bar { position: fixed; inset: auto 0 0; z-index: 8; padding: 10px 12px max(10px, env(safe-area-inset-bottom)); }
+.plate-trigger { display: flex; justify-content: space-between; gap: 12px; padding: 12px; margin: auto; width: min(100%, 620px); box-shadow: 0 4px 20px #182c2670; }
+body:has(.plate-bar) { padding-bottom: 65px; }
+.plate-summary { padding: 0 22px 22px; display: grid; gap: 12px; }
+.plate-summary ul { list-style: none; padding: 0; }
+.plate-summary li { display: flex; align-items: center; justify-content: space-between; gap: 10px; border-bottom: 1px solid var(--line); padding: 10px 0; }
+.plate-summary li p { color: var(--muted); font-size: 13px; }
+.plate-total { display: flex; justify-content: space-between; gap: 8px; }
+.detail-plate { margin-top: 12px; }
+.pick-open { display: block; width: 100%; padding: 0; border: 0; background: transparent; text-align: left; color: inherit; }
