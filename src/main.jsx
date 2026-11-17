@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
+import { InstallPrompt } from './InstallPrompt.jsx';
 import { keralaDate, isSpecial, isAvailable, formatPrice, dishMedia } from './menu.js';
 import { Icon } from './Icon.jsx';
 import { DishCard, DishDialog } from './Dining.jsx';
@@ -86,12 +87,13 @@ function App() {
     <>
       <header className="topbar">
         <div className="frame bar-inner">
-          <a className="brand" href="#top"><span><strong>Spice Garden</strong><small>BY AADISAKTTHI</small></span></a>
+          <a className="brand" href="#top"><img src="/icons/logo.png" alt="" width="42" height="42" /><span><strong>Spice Garden</strong><small>BY AADISAKTTHI</small></span></a>
           {tableLabel && <span className="table-context">Table {tableLabel}</span>}
         </div>
       </header>
 
       <main className="frame" id="top">
+        <InstallPrompt />
         <section className="discovery-hero" aria-labelledby="hero-title">
           {heroPhoto && <img className="discovery-hero-photo" src={heroPhoto} alt="" fetchPriority="high" />}
           <div className="hero-copy">
@@ -184,4 +186,10 @@ if (window.location.pathname.replace(/\/$/, '') === '/admin') {
   import('./Admin.jsx').then(({ default: Admin }) => root.render(<Admin />));
 } else {
   root.render(<App />);
+}
+
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').catch((error) => {
+    console.warn('Spice Garden offline setup failed.', error);
+  });
 }

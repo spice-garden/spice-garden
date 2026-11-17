@@ -109,3 +109,6 @@
 .password-field { position: relative; }
 .password-field input { padding-right: 48px; }
 .password-field > button { position: absolute; right: 1px; bottom: 1px; min-height: 0; height: calc(2.5rem - 2px); border: none; padding: 0 10px; background: transparent; display: grid; place-items: center; }
+
+.admin-brand { display: inline-flex; align-items: center; gap: 8px; }
+.admin-brand img { filter: brightness(0) saturate(100%) invert(91%) sepia(20%) saturate(429%) hue-rotate(26deg) brightness(105%); }

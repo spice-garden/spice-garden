@@ -133,3 +133,10 @@ footer { padding: 22px 0; border-top: 1px solid var(--line); color: var(--muted)
   .dish-bottom { padding: 5px 10px 5px 12px; }
   .footer-inner { align-items: flex-start; flex-direction: column; gap: 5px; }
 }
+
+.install-banner { display: flex; flex-wrap: wrap; align-items: center; gap: 9px 12px; margin-top: 14px; padding: 10px 12px; border: 1px solid #cbd8b6; border-radius: 10px; background: #edf3e3; color: #204a35; }
+.install-banner div { flex: 1 1 145px; }
+.install-banner p { margin: 2px 0 0; font-size: .85rem; }
+.install-banner button { min-height: 38px; border: 0; border-radius: 7px; cursor: pointer; }
+.install-action { background: #204a35; color: white; padding: 0 13px; }
+.install-dismiss { background: transparent; color: inherit; font-size: 1.35rem; width: 38px; }

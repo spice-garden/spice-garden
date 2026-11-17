@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#204a35">
+    <title>Spice Garden · Offline</title>
+    <style>
+      body { margin: 0; background: #f7f4ed; color: #204a35; font: 1rem/1.6 system-ui, sans-serif; }
+      main { max-width: 29rem; margin: 14vh auto; padding: 1.5rem; }
+      h1 { margin: 0; font: 700 2.4rem Georgia, serif; }
+      button { font: inherit; background: #204a35; color: white; padding: .65rem 1rem; border: 0; border-radius: .5rem; cursor: pointer; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Spice Garden</h1>
+      <p>You’re offline. Reconnect to see the current menu, or ask your server for help.</p>
+      <form method="get" id="retry"><button>Try again</button></form>
+      <script>
+        const form = document.getElementById('retry');
+        const query = new URLSearchParams(location.search);
+        for (const [name, value] of query) {
+          const input = document.createElement('input');
+          input.type = 'hidden'; input.name = name; input.value = value;
+          form.append(input);
+        }
+      </script>
+    </main>
+  </body>
+</html>
