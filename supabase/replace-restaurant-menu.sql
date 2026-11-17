@@ -5,7 +5,7 @@
 -- Highest numeric listed price wins; a duplicate stays in the category of that price.
 -- Equal-priced repeated listings keep their first category. Rows with no numeric
 -- price display the app's “Ask staff” label. Mixed veg/chicken listings are tagged
--- non-veg; two dishes with unclear ingredients are imported as unpublished drafts.
+-- non-veg; four dishes with unclear ingredients are imported as unpublished drafts.
 begin;
 
 lock table public.menu_categories, public.menu_items in share row exclusive mode;
@@ -233,14 +233,14 @@ Potatoes and eggplant simmered with aromatic spices.', 'veg', 25000, true, 127),
   ('printed-menu-10', 'KERALA PRAWNS GHEE ROAST', 'Prawns coated in a bold Kerala-style roasted spice masala with ghee.', 'non-veg', 66000, true, 165),
   ('printed-menu-10', 'KERALA PAAL KONJU (ADD PRAWNS) (PHOTO)', 'A Kerala-style milk-based prawn preparation with a rich, savoury character.', 'non-veg', 66000, true, 166),
   ('printed-menu-11', 'BANANA SPLIT', 'A classic dessert of banana served with ice cream and sweet toppings.', 'veg', 39000, true, 167),
-  ('printed-menu-11', 'FRIED ICE CREAM', 'Ice cream wrapped in a crisp coating for a contrast of warm crunch and cold centre.', 'veg', 42000, true, 168),
+  ('printed-menu-11', 'FRIED ICE CREAM', 'Ice cream wrapped in a crisp coating for a contrast of warm crunch and cold centre.', 'unknown', 42000, false, 168),
   ('printed-menu-11', 'SUJI KHEER', 'A smooth, sweet pudding prepared with semolina and milk.', 'veg', 24000, true, 170),
   ('printed-menu-11', 'SWEET POHA', 'Flattened rice prepared as a lightly sweetened traditional dessert.', 'veg', 22000, true, 171),
   ('printed-menu-11', 'BANANA WITH HONEY NUTS', 'Banana served with honey and a crunchy nut topping.', 'veg', 27500, true, 172),
   ('printed-menu-11', 'FRUIT CREAM', 'A chilled dessert of mixed fruits folded into sweet cream.', 'veg', 34000, true, 173),
   ('printed-menu-11', 'BANANA FRITTERS WITH VANILLA ICE CREAM', 'Golden banana fritters served with vanilla ice cream.', 'veg', 36000, true, 174),
   ('printed-menu-11', 'COCONUT JAGGERY BALL', 'A sweet bite made with coconut and jaggery.', 'veg', 28000, true, 175),
-  ('printed-menu-11', 'BROWNIE WITH VANILLA ICE CREAM', 'A chocolate brownie served with cool vanilla ice cream.', 'veg', 35000, true, 176),
+  ('printed-menu-11', 'BROWNIE WITH VANILLA ICE CREAM', 'A chocolate brownie served with cool vanilla ice cream.', 'unknown', 35000, false, 176),
   ('printed-menu-11', 'GULAB JAMUN WITH ICE CREAM', 'Soft gulab jamun paired with a scoop of ice cream.', 'veg', 35000, true, 177),
   ('printed-menu-11', 'RICE KHEER', 'A traditional creamy rice pudding gently sweetened and flavoured.', 'veg', 25000, true, 178),
   ('printed-menu-11', 'KERALA PAYASAM', 'A traditional Kerala-style sweet pudding served as a dessert.', 'veg', 29000, true, 179),
